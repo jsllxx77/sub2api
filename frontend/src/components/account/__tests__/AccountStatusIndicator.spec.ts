@@ -98,6 +98,29 @@ describe('AccountStatusIndicator', () => {
     expect(wrapper.text()).not.toContain('⚡')
   })
 
+  it('OAuth 401 temp unschedulable → 显示 401 badge', () => {
+    const wrapper = mount(AccountStatusIndicator, {
+      props: {
+        account: makeAccount({
+          id: 99,
+          platform: 'openai',
+          type: 'oauth',
+          temp_unschedulable_until: '2099-03-15T00:00:00Z',
+          temp_unschedulable_reason:
+            'token refresh retry exhausted: error: code=502 reason="OPENAI_OAUTH_TOKEN_REFRESH_FAILED" message="token refresh failed: status 401, body: {\"error\":{\"code\":\"refresh_token_reused\"}}"'
+        })
+      },
+      global: {
+        stubs: {
+          Icon: true
+        }
+      }
+    })
+
+    expect(wrapper.text()).toContain('401')
+    expect(wrapper.classes().join(' ')).not.toContain('badge-warning')
+  })
+
   it('AICredits key 生效 → 显示积分已用尽 (credits_exhausted)', () => {
     const wrapper = mount(AccountStatusIndicator, {
       props: {
@@ -122,7 +145,7 @@ describe('AccountStatusIndicator', () => {
       }
     })
 
-    expect(wrapper.text()).toContain('account.creditsExhausted')
+    expect(wrapper.text()).toContain('admin.accounts.status.creditsExhausted')
   })
 
   it('模型限流 + overages 启用 + AICredits key 生效 → 普通限流样式（积分耗尽，无 ⚡）', () => {
@@ -157,6 +180,6 @@ describe('AccountStatusIndicator', () => {
     expect(wrapper.text()).toContain('CSon45')
     expect(wrapper.text()).not.toContain('⚡')
     // AICredits 积分耗尽状态应显示
-    expect(wrapper.text()).toContain('account.creditsExhausted')
+    expect(wrapper.text()).toContain('admin.accounts.status.creditsExhausted')
   })
 })
